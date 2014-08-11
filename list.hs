@@ -103,13 +103,24 @@ data Code a = Multiple a Int | Single a deriving(Show)
 rleEncode2_aux :: (Eq a) => [a] -> (Maybe (Code a)) -> [Code a] -> [Code a]
 rleEncode2_aux [] Nothing result = result
 rleEncode2_aux [] (Just x) result = result ++ [x]
-rleEncode2_aux (x:xs) Nothing result = rleEncode2_aux xs (Just (Single x)) result
+rleEncode2_aux (x:xs) Nothing result = rleEncode2_aux xs (Just $ Single x) result
 rleEncode2_aux (x:xs) (Just (Single v)) result
-  | x == v = rleEncode2_aux xs (Just (Multiple v 2)) result
+  | x == v = rleEncode2_aux xs (Just $ Multiple v 2) result
   | otherwise = rleEncode2_aux (x:xs) Nothing (result ++ [Single v])
 rleEncode2_aux (x:xs) (Just (Multiple v n)) result
-  | x == v = rleEncode2_aux xs (Just (Multiple v (n+1))) result
+  | x == v = rleEncode2_aux xs (Just $ Multiple v $ n + 1) result
   | otherwise = rleEncode2_aux (x:xs) Nothing (result ++ [Multiple v n])
 
 rleEncode2 :: (Eq a) => [a] -> [Code a]
 rleEncode2 input = rleEncode2_aux input Nothing []
+
+-- duplicate
+dupl :: [a] -> [a]
+dupl input = foldl (\accu x -> accu ++ [x] ++ [x]) [] input
+
+-- replicate n
+repl :: [a] -> Int -> [a]
+repl input n = foldl (aux n) [] input
+  where 
+    aux 0 accu x = accu
+    aux n accu x = aux (n-1) (accu ++ [x]) x
